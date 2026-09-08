@@ -1,1 +1,12 @@
-# campus-today-web
+# campus-today Web Demo
+
+手机可直接访问的静态网页演示版。
+
+## 页面
+- `index.html`：请假详情演示
+- `edit.html`：修改演示数据，保存在浏览器 localStorage
+
+## 说明
+- 固定显示 DEMO / 非官方演示标识。
+- 二维码可扫描，但只显示 DEMO / 非官方演示文本，不连接任何学校或“今日校园”核验系统。
+- 不用于冒充学校官方页面或真实请假凭证。
