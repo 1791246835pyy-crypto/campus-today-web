@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>演示设置</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f6f8;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:#252a31}
+.wrap{max-width:680px;margin:0 auto;padding:22px 16px 60px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+h1{font-size:20px;margin:0}.back{color:#3399fe;text-decoration:none}.note{background:#fff7df;border:1px solid #f1dc98;color:#775c12;border-radius:10px;padding:11px 13px;font-size:13px;line-height:20px;margin-bottom:14px}
+.card{background:#fff;border-radius:13px;padding:16px;margin-bottom:14px;box-shadow:0 1px 8px rgba(0,0,0,.04)}
+label{display:block;font-size:13px;color:#7a8592;margin:11px 0 5px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input,select,textarea{width:100%;border:1px solid #dfe4ea;border-radius:8px;padding:10px 11px;font-size:14px;background:#fff;outline:none}
+textarea{min-height:78px;resize:vertical}.checks .row{display:grid;grid-template-columns:.7fr 1.1fr 1fr;gap:8px;margin-bottom:8px}.checks .idea{grid-column:1/-1}
+button{border:0;border-radius:9px;padding:11px 15px;font-size:14px;cursor:pointer}.save{background:#3399fe;color:#fff;width:100%;font-size:16px}.secondary{background:#eef2f6;color:#3d4650}
+.actions{display:flex;gap:10px}.actions button{flex:1}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.checks .row{grid-template-columns:1fr}.checks .idea{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>假条演示设置</h1><a class="back" href="index.html">查看页面 →</a></div>
+  <div class="note">此页面只用于配置“非官方演示版”的显示内容。展示页固定保留 DEMO / 非官方标识，二维码不可用于任何真实核验。</div>
+
+  <div class="card">
+    <div class="grid">
+      <div><label>姓名</label><input id="name"></div>
+      <div><label>请假类型</label><input id="type"></div>
+      <div><label>是否离校</label><select id="isLeave"><option>是</option><option>否</option></select></div>
+      <div><label>状态</label><select id="state"><option>正在休假中</option><option>已完成</option></select></div>
+      <div><label>开始时间</label><input id="startDate"></div>
+      <div><label>结束时间</label><input id="endDate"></div>
+      <div><label>时长显示</label><input id="countDate"></div>
+      <div><label>申请时间</label><input id="applyDate"></div>
+    </div>
+    <label>请假原因</label><textarea id="reason"></textarea>
+    <div class="grid">
+      <div><label>发起位置</label><input id="address"></div>
+      <div><label>抄送人</label><input id="cc"></div>
+      <div><label>紧急联系人</label><input id="phone"></div>
+      <div><label>宿舍信息</label><input id="roomInfo"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <label style="margin-top:0">审批流程</label>
+    <div class="checks" id="checks"></div>
+    <button class="secondary" id="add">+ 添加一级审批</button>
+  </div>
+
+  <div class="actions">
+    <button class="secondary" id="reset">恢复演示默认值</button>
+    <button class="save" id="save">保存并查看</button>
+  </div>
+</div>
+<script>
+const defaults={
+  name:"张同学",type:"事假",isLeave:"是",state:"正在休假中",
+  startDate:"2026-09-08 08:00",endDate:"2026-09-08 22:00",countDate:"14小时",
+  reason:"个人事务",address:"校内",cc:"辅导员",phone:"138****0000",roomInfo:"1号公寓 101",
+  applyDate:"09-08 07:35",
+  checks:[
+    {level:"一级",status:"",name:"王老师",date:"09-08 07:42",idea:"同意"},
+    {level:"二级",status:"",name:"李老师",date:"09-08 07:48",idea:"同意"}
+  ]
+};
+let cfg;try{cfg={...defaults,...JSON.parse(localStorage.getItem("campusDemoConfig")||"{}")}}catch(e){cfg={...defaults}}
+const ids=["name","type","isLeave","state","startDate","endDate","countDate","reason","address","cc","phone","roomInfo","applyDate"];
+ids.forEach(id=>document.getElementById(id).value=cfg[id]??"");
+
+function renderChecks(){
+  const box=document.getElementById("checks");box.innerHTML="";
+  (cfg.checks||[]).forEach((c,i)=>{
+    const d=document.createElement("div");d.className="row";
+    d.innerHTML=`<input data-k="level" data-i="${i}" value="${esc(c.level)}" placeholder="级别">
+    <input data-k="name" data-i="${i}" value="${esc(c.name)}" placeholder="审批人">
+    <input data-k="date" data-i="${i}" value="${esc(c.date)}" placeholder="时间">
+    <input class="idea" data-k="idea" data-i="${i}" value="${esc(c.idea||"")}" placeholder="审批意见">`;
+    box.appendChild(d);
+  });
+}
+function esc(s){return String(s??"").replace(/"/g,"&quot;")}
+renderChecks();
+
+document.getElementById("add").onclick=()=>{
+  cfg.checks=cfg.checks||[];
+  cfg.checks.push({level:["一级","二级","三级"][cfg.checks.length]||`${cfg.checks.length+1}级`,name:"老师",date:"",idea:"同意"});
+  renderChecks();
+};
+document.getElementById("checks").addEventListener("input",e=>{
+  const i=+e.target.dataset.i,k=e.target.dataset.k;if(Number.isFinite(i)&&k)cfg.checks[i][k]=e.target.value;
+});
+document.getElementById("save").onclick=()=>{
+  ids.forEach(id=>cfg[id]=document.getElementById(id).value);
+  localStorage.setItem("campusDemoConfig",JSON.stringify(cfg));
+  location.href="index.html";
+};
+document.getElementById("reset").onclick=()=>{
+  localStorage.removeItem("campusDemoConfig");location.reload();
+};
+</script>
+</body>
+</html>
